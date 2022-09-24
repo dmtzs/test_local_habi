@@ -8,16 +8,17 @@ except ImportError as e_imp:
     print(f"The following import error ocurred: {e_imp}")
 
 def pretty_print(func):
-    def wrapper():
-        result = func()
+    def wrapper(endpoint):
+        result = func(endpoint)
         result["body"] = json.loads(result["body"])
+        result["endpoint_executed"] = endpoint
         pretty = json.dumps(result, indent=4)
         print(pretty)
     return wrapper
 
 #get lead
 @pretty_print
-def get_lead():
+def get_lead(_):
     result = get_lead_lambda_handler(
         {
             "httpMethod": "GET",
@@ -32,7 +33,7 @@ def get_lead():
 
 # drop comparable(delete_comparable)
 @pretty_print
-def delete_comparable():
+def delete_comparable(_):
     body_definition = {
         "object_list": [
             {"comparable_id": 52890, "reason": "out_median"},
@@ -51,16 +52,23 @@ def delete_comparable():
     )
     return result
 
+def invalid_arg(endpoint):
+    print(f"El endpoint {endpoint} no existe")
+
+func_dict = {
+    "get_lead": get_lead,
+    "delete_comparable": delete_comparable
+}
+
 if __name__ == "__main__":
     try:
-        arg_received = sys.argv[1]
-        # print(f"Argument received: {arg_received}")
-        if arg_received == "get_lead":
-            get_lead()
-        elif arg_received == "delete_comparable":
-            delete_comparable()
+        args_received = sys.argv[1:]
+        # print(f"Argument received: {args_received}")
+        if len(args_received) == 0:
+            raise Exception("No arguments received")
         else:
-            print("Invalid argument")
+            for functions in args_received:
+                func_dict.get(functions, invalid_arg)(functions)
     except Exception as ex:
         print(f"The following error ocurred: {ex}")
 
