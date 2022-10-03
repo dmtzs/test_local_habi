@@ -1,4 +1,6 @@
 # My files to ignore
+tests/
+test.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
