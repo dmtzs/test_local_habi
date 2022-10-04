@@ -6,6 +6,7 @@ try:
     from apis.lead.get_lead import lambda_handler as get_lead_lambda_handler
     from apis.lead.get_leads import lambda_handler as get_leads_lambda_handler
     from apis.city.get_city_list import lambda_handler as get_city_list_lambda_handler
+    from apis.lead.get_calculations import lambda_handler as get_calculations_lambda_handler
     from apis.comparable.delete_compararable import lambda_handler as del_comp_lambda_handler
     from apis.lead.get_leads_filters import lambda_handler as get_leads_filters_lambda_handler
     from apis.lead.get_historic_leads import lambda_handler as get_historic_leads_lambda_handler
@@ -258,6 +259,26 @@ def get_filters(_):
     )
     return result
 
+# get calculations
+@pretty_print
+def get_calculations(_):
+    result = get_calculations_lambda_handler(
+        {
+            "httpMethod": "GET",
+            "queryStringParameters": {
+                "nid": "9116208157",# CO que trae porcentje de venta: 1601644232
+                "country": "CO",
+                "list_comparables_id": "1746153,2579995,1879652,841383,2201032,564209,1459495,2145130,2511836,1770440,445404"
+                ###
+                # "nid": "8630443177",#7267296544, 9132001171
+                # "country": "MX",
+                # "list_comparables_id": "1153551,1877524,1958268,2102831,2250490,2299287"
+            },
+        },
+        types.SimpleNamespace(),
+    )
+    return result
+
 def invalid_arg(endpoint):
     print(f"El endpoint {endpoint} no existe")
 
@@ -272,7 +293,8 @@ func_dict = {
     "get_historic_leads": get_historic_leads,
     "delete_comparable": delete_comparable,
     "get_cities": get_cities,
-    "get_filters": get_filters
+    "get_filters": get_filters,
+    "get_calculations": get_calculations
 }
 
 if __name__ == "__main__":
