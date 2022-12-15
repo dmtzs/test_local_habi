@@ -2,9 +2,11 @@ try:
     import sys
     import json
     import types
+    import traceback
     # from test_local_const import *
     from apis.lead.get_lead import lambda_handler as get_lead_lambda_handler
     from apis.lead.get_leads import lambda_handler as get_leads_lambda_handler
+    from apis.lead.get_leads_by_nid import lambda_handler as get_leads_by_nid_lambda_handler
     from apis.city.get_city_list import lambda_handler as get_city_list_lambda_handler
     from apis.lead.get_calculations import lambda_handler as get_calculations_lambda_handler
     from apis.comparable.delete_compararable import lambda_handler as del_comp_lambda_handler
@@ -12,17 +14,36 @@ try:
     from apis.lead.get_historic_leads import lambda_handler as get_historic_leads_lambda_handler
     from apis.comparable.get_comparables import lambda_handler as get_comparables_lambda_handler
     from apis.lead.post_status_pricing import lambda_handler as post_status_pricing_lambda_handler
+    from apis.historical_polygon.get_historical_polygon import lambda_handler as get_historical_polygon_lambda_handler
 except ImportError as e_imp:
     print(f"The following import error ocurred: {e_imp}")
 
 def pretty_print(func):
     def wrapper(endpoint):
         result = func(endpoint)
+        print(f"type of result: {type(result)}")
+        print(f"result: {result}")
+        print(f"result: {result['body']}")
         result["body"] = json.loads(result["body"])
         result["endpoint_executed"] = endpoint
         pretty = json.dumps(result, indent=4)
         print(pretty)
     return wrapper
+
+# get historical polygon
+@pretty_print
+def get_historical_polygon(_):
+    result = get_historical_polygon_lambda_handler(
+        {
+            "httpMethod": "GET",
+            "queryStringParameters": {
+                "country": "MX",
+                "property_deal_id": "53906",
+            },
+        },
+        types.SimpleNamespace(),
+    )
+    return result
 
 # get lead
 @pretty_print
@@ -79,10 +100,23 @@ def get_comparables(_):
         {
             "httpMethod": "GET",
             "queryStringParameters": {
-                "nid": "9116145214",
-                "country": "CO",
+                "nid": "10638433904",
+                "country": "MX",
+                "from_date_create": "6",
+                "property_type_id": "2",
+                "baths": "3",
+                "rooms": "3",
+                "elevator": "0",
+                "garage": "0",
+                "area_min": "22",
+                "area_max": "42",
+                "price_per_m2_min": "0",
+                "price_per_m2_max": "100000",
+                "years_old_min": "24",
+                "years_old_max": "40",
                 "radius": 1,
-                "scale": "km"
+                "scale": "km",
+                "appraisal_date": "2022,2021,2020,2019"
                 #"latitude":19.3479,
                 #"longitude":-99.124,
                 # "elevator":1,
@@ -252,7 +286,7 @@ def get_filters(_):
         {
             "httpMethod": "GET",
             "queryStringParameters": {
-                "country": "CO"
+                "country": "MX"
             },
         },
         types.SimpleNamespace(),
@@ -266,13 +300,18 @@ def get_calculations(_):
         {
             "httpMethod": "GET",
             "queryStringParameters": {
-                "nid": "9116208157",# CO que trae porcentje de venta: 1601644232
-                "country": "CO",
-                "list_comparables_id": "1746153,2579995,1879652,841383,2201032,564209,1459495,2145130,2511836,1770440,445404"
+                # "nid": "9116208157",# CO que trae porcentje de venta: 1601644232
+                # "country": "CO",
+                # "list_comparables_id": "1746153,2579995,1879652,841383,2201032,564209,1459495,2145130,2511836,1770440,445404",
                 ###
-                # "nid": "8630443177",#7267296544, 9132001171
+                "nid": "10196481172",#7267296544, 9132001171
+                "country": "MX",
+                "list_comparables_id": "5557584,5524642,2115717", #"1153551,1877524,1958268,2102831,2250490,2299287"
+
+                # "nid": "10517355807",
                 # "country": "MX",
-                # "list_comparables_id": "1153551,1877524,1958268,2102831,2250490,2299287"
+                # "list_comparables_id": "6233490,6584479,4484462,4230553,4879105,7712093,196670,5419635,7736484,3860729,1319290,4771617,7713326",
+                # "manual_percentile": "23"
             },
         },
         types.SimpleNamespace(),
@@ -286,7 +325,6 @@ func_dict = {
     "get_lead": get_lead,
     "get_comparables": get_comparables,
     "get_leads": get_leads,
-    "get_comparables": get_comparables,
     "put_pricing_status_progress": put_pricing_status_progress,
     "put_pricing_status_aborted": put_pricing_status_aborted,
     "put_pricing_status_completed": put_pricing_status_completed,
@@ -294,7 +332,8 @@ func_dict = {
     "delete_comparable": delete_comparable,
     "get_cities": get_cities,
     "get_filters": get_filters,
-    "get_calculations": get_calculations
+    "get_calculations": get_calculations,
+    "get_historical_polygon": get_historical_polygon
 }
 
 if __name__ == "__main__":
@@ -306,8 +345,8 @@ if __name__ == "__main__":
         else:
             for functions in args_received:
                 func_dict.get(functions, invalid_arg)(functions)
-    except Exception as ex:
-        print(f"The following error ocurred: {ex}")
+    except Exception:
+        print(f"The following error ocurred: {traceback.format_exc()}")
 
 # Dentro de la carpeta globack_utils/db/config/config.py poner credenciales para DEV
 # Para ejecutar desde terminal poner algo como: python request_test_local.py get_lead
